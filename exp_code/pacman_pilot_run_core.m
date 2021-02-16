@@ -116,7 +116,7 @@ msg.inst2 = double('Well done. We will start the run now.');
 msg.s_key = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
 msg.s_key2 = double('You will view a series of images. \n In between the images, you will see a white cross +. \n When the cross turns red, press the button.\n\n 참가자가 준비되었으면 이미징을 시작합니다. (s)') ;
 
-msg.start_buffer = double('시작합니다...');
+msg.start_buffer = double('Starting...');
 
 msg.fixation = double('+');
 
@@ -257,8 +257,16 @@ try
     end
     %% Time stamp for run start
     
-    data.runscan_starttime = GetSecs;
+    data.runscan_starttime = GetSecs; % run start timestamp
+    Screen(theWindow, 'FillRect', bgcolor, window_rect);
+    DrawFormattedText(theWindow, msg.start_buffer, 'center', 'center', white, [], [], [], 1.2);
+    Screen('Flip', theWindow);
     
+    waitsec_fromstarttime(data.runscan_starttime, 4);
+    Screen(theWindow,'FillRect',bgcolor, window_rect);
+    Screen('Flip', theWindow);
+    
+    waitsec_fromstarttime(data.runscan_starttime, 8);
     
     %% EYELINK AND BIOPAC START
     
@@ -274,6 +282,11 @@ try
         waitsec_fromstarttime(data.biopac_starttime, 1); % biopac start trigger: 1
         BIOPAC_trigger(ljHandle, biopac_channel, 'off');
     end
+    
+    Screen(theWindow,'FillRect',bgcolor, window_rect);
+    Screen('Flip', theWindow);
+    
+    waitsec_fromstarttime(data.runscan_starttime, 16);
     %% START IMAGE VIEWING
    
 
