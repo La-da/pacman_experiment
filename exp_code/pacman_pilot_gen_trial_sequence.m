@@ -73,6 +73,7 @@ if session_no == 1 % natural images
         
     end
     stimuli_info(:,6) = num2cell(col_change_time); 
+    stimuli_info(:,7) = num2cell(zeros(120,1)); 
     
 elseif session_no == 2 % geometric images
     
@@ -156,6 +157,7 @@ elseif session_no == 2 % geometric images
 
         end
         stimuli_info(:,6) = num2cell(col_change_time); 
+        stimuli_info(:,7) = num2cell(zeros(120,1)); 
         
         
     else
@@ -237,6 +239,7 @@ elseif session_no == 2 % geometric images
 
         end
         stimuli_info(:,6) = num2cell(col_change_time); 
+        stimuli_info(:,7) = num2cell(zeros(120,1)); 
 
     end
     

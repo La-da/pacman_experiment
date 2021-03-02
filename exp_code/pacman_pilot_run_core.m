@@ -8,6 +8,7 @@ testmode = false;
 USE_EYELINK = false;
 USE_BIOPAC = false;
 scan_adjust = false;
+do_practice = false;
 
 %datdir = fullfile(basedir, 'data');
 %subject_dir = fullfile(datdir, sid);
@@ -29,6 +30,8 @@ for i = 1:length(varargin)
                 ljHandle = BIOPAC_setup(channel_n); % BIOPAC SETUP
             case {'scan_adjust', 'hs/dc'}
                 scan_adjust = true;
+            case {'practice'}
+                do_practice = true;
         end
     end
 end
@@ -108,19 +111,19 @@ blue = [0 85 169];
 orange = [255 164 0];
 
 %% KOREAN INSTRUCTIONS
-
+% Beginning of the session - before first run
 msg.hs_dc = double('스캐너 조정 작업중입니다.\n 소음이 발생할 수 있습니다. 화면 중앙의 십자표시를\n 편안한 마음으로 바라봐주세요.'); % head scout and distortion correction
-msg.inst1 = double('You will view a series of images. \n In between the images, you will see a white cross +. \n When the cross turns red, press the button.\n\n Practice time...') ;
-msg.inst2 = double('Well done. We will start the run now.');
+msg.inst1 = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시 빨간가색으로 바뀔때 \n 버튼을 눌러주세요.') ;
+msg.inst2 = double('잘하셨습니다. 세션을 시작하겠습니다.');
 
-msg.s_key = double('참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-msg.s_key2 = double('You will view a series of images. \n In between the images, you will see a white cross +. \n When the cross turns red, press the button.\n\n 참가자가 준비되었으면 이미징을 시작합니다. (s)') ;
+msg.s_key = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시 빨간가색으로 바뀔때 \n 버튼을 눌러주세요. \n\n 참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
+msg.s_key2 = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시 빨간가색으로 바뀔때 \n 버튼을 눌러주세요. \n\n 참가자가 준비되었으면 이미징을 시작합니다. (s)') ;
 
-msg.start_buffer = double('Starting...');
+msg.start_buffer = double('시작합니다...');
 
 msg.fixation = double('+');
 
-msg.run_end = double('Well done. The run is over.');
+msg.run_end = double('이번 세션이 끝났습니다. \n\n 잘하셨습니다. 잠시 대기해 주세요.');
 
 
 %% FULL SCREEN
@@ -130,8 +133,8 @@ try
     [theWindow, ~] = Screen('OpenWindow',0, bgcolor, window_rect);%[0 0 2560/2 1440/2]
     Screen('Preference','TextEncodingLocale','ko_KR.UTF-8');
     Screen('TextSize', theWindow, fontsize(3));
-    %if ~testmode, HideCursor; end
-    HideCursor;
+    if ~testmode, HideCursor; end
+    %HideCursor;
     %% SETUP: Eyelink
     % need to be revised when the eyelink is here.
     if USE_EYELINK
@@ -149,7 +152,7 @@ try
     end
     
     %% HEAD SCOUT AND DISTORTION CORRECTION
-    if scan_adjust == true % the first run
+    if scan_adjust == true && run_no == 1 % the first run
         while (1)
             
             [~,~,keyCode] = KbCheck;
@@ -187,7 +190,7 @@ try
     
     %% Practice before Run 1
     
-    if run_no == 1
+    if run_no == 1 && do_practice == true 
         
         WaitSecs(0.5);
         while (1)
@@ -256,7 +259,7 @@ try
         end
     end
     %% Time stamp for run start
-    
+    tic
     data.runscan_starttime = GetSecs; % run start timestamp
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     DrawFormattedText(theWindow, msg.start_buffer, 'center', 'center', white, [], [], [], 1.2);
@@ -297,7 +300,7 @@ try
     
     
     data = viewImages(im_path, stimuli_info, msg, data);
-    
+    toc
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     Screen('TextSize', theWindow, fontsize(3));
     DrawFormattedText(theWindow, msg.run_end, 'center', textH, white);
@@ -315,7 +318,7 @@ try
         BIOPAC_trigger(ljHandle, biopac_channel, 'off');
     end
     
-    data.runscan_endtime{i} = GetSecs;
+    data.runscan_endtime = GetSecs;
     save(data.datafile, 'data', '-append');
     
     while (1)
@@ -419,8 +422,17 @@ Screen('BlendFunction', theWindow, 'GL_SRC_ALPHA', 'GL_ONE_MINUS_SRC_ALPHA');
 imageView_sTime = GetSecs;
 
 for i = 1:length(im_path)
+    trial_start = GetSecs;
+    data.dat{i}.trial_start = trial_start;
+    
+    DrawFormattedText(theWindow, msg.fixation, 'center', 'center', text_color, [], [], [], 1.5);
+    Screen('Flip', theWindow);
+    
+
     theImageLocation = im_path{i};
+    tic 
     theImage = imread(theImageLocation);
+    toc
 
     imageTexture = Screen('MakeTexture', theWindow, theImage);
 
@@ -442,7 +454,7 @@ for i = 1:length(im_path)
     %     sca;
     %     return;
     % end
-    trial_start = GetSecs;
+    %trial_start = GetSecs;
     %if i == 1, data.run_starttime = trial_start; end
     
     if stimuli_info{i,5}==1
@@ -452,15 +464,23 @@ for i = 1:length(im_path)
         Screen('Flip', theWindow);
         %WaitSecs(stimuli_info{i,4}-1.1);
         %waitsec_fromstarttime(trial_start, stimuli_info{i,4}-1.1);
+        data.dat{i}.fixation_start = GetSecs;
         waitsec_fromstarttime(trial_start, stimuli_info{i,6});
         
-        data.cross_change_time{i} = GetSecs;
+        cross_change_time = GetSecs;
+        data.cross_change_time{i} = cross_change_time;
+        real_cross_timing = cross_change_time-trial_start;
+        data.stimuli_info(i,7) = num2cell(real_cross_timing);
+        
         DrawFormattedText(theWindow, msg.fixation, 'center', 'center', red, [], [], [], 1.5);
         Screen('Flip', theWindow);
+        data.dat{i}.red_start = GetSecs;
         WaitSecs(0.1);
         
         cross_remain_start = GetSecs;
-        while GetSecs - cross_remain_start <= stimuli_info{i,4}-stimuli_info{i,6}-0.1+1
+        data.dat{i}.cross_remain_start = cross_remain_start;
+
+        while GetSecs - cross_remain_start <= stimuli_info{i,4}-real_cross_timing-0.1
             
             DrawFormattedText(theWindow, msg.fixation, 'center', 'center', text_color, [], [], [], 1.5);
             Screen('Flip', theWindow);
@@ -479,6 +499,8 @@ for i = 1:length(im_path)
             
             
         end
+        data.dat{i}.fixation_end = GetSecs;
+
         %WaitSecs(1);
         %waitsec_fromstarttime(GetSecs, stimuli_info{i,4}-stimuli_info{i,6}-0.1+1);
         
@@ -487,7 +509,9 @@ for i = 1:length(im_path)
         DrawFormattedText(theWindow, msg.fixation, 'center', 'center', text_color, [], [], [], 1.5);
         Screen('Flip', theWindow);
         %WaitSecs(stimuli_info{i,4});
-        waitsec_fromstarttime(trial_start, stimuli_info{i,4})
+        data.dat{i}.fixation_start = GetSecs;
+        waitsec_fromstarttime(trial_start, stimuli_info{i,4});
+        data.dat{i}.fixation_end = GetSecs;
 
     end
 
@@ -499,19 +523,22 @@ for i = 1:length(im_path)
     %WaitSecs(2);  % Show image for 2 s
     %waitsec_fromstarttime(stim_starttime, 2) % --> original (2 s stim. dur.)
     %waitsec_fromstarttime(stim_starttime, 1) % --> revised (1 s stim. dur.)
+    data.dat{i}.stim_start = GetSecs;
+
     waitsec_fromstarttime(stim_starttime, 1.5) % --> revised (1.5 s stim. dur.)
     
     data.stim_endtime{i} = GetSecs;
-    
+    data.dat{i}.stim_end = GetSecs;
+
     if i == 30 ||  i == 60 || i == 90
         save(data.datafile, 'data', '-append');
     end
-
+    data.dat{i}.save_end = GetSecs;
 end
 
-DrawFormattedText(theWindow, '', 'center', 'center', text_color, [], [], [], 1.5);
+DrawFormattedText(theWindow, msg.fixation, 'center', 'center', text_color, [], [], [], 1.5);
 Screen('Flip', theWindow);
-WaitSecs(1);
+WaitSecs(4);
 
 %sca;
 %data.runscan_endtime{i} = GetSecs;

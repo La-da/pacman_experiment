@@ -7,10 +7,9 @@ function [basedir, session_no, sid, subject_dir] = pacman_directory_sub_info(whe
 switch where
     
     case 'lk_mac'
-        basedir = '/System/Volumes/Data/Users/ladakohoutova/Dropbox/pacman/';
-        
-    case 'lk_git_mac'
-        basedir = '/System/Volumes/Data/Users/ladakohoutova/Dropbox/github/pacman_experiment/';
+        basedir = '/System/Volumes/Data/Users/ladakohoutova/Dropbox/pacman/projects/';
+    case 'lap01'
+        basedir = 'C:\Users\Cocoanlab_WL01\Dropbox\pacman\projects\';
         
 end
 
