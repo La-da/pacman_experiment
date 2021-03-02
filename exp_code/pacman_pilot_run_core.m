@@ -116,8 +116,8 @@ msg.hs_dc = double('스캐너 조정 작업중입니다.\n 소음이 발생할 �
 msg.inst1 = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시 빨간가색으로 바뀔때 \n 버튼을 눌러주세요.') ;
 msg.inst2 = double('잘하셨습니다. 세션을 시작하겠습니다.');
 
-msg.s_key = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시 빨간가색으로 바뀔때 \n 버튼을 눌러주세요. \n\n 참가자가 준비되었으면, \n 이미징을 시작합니다 (s).');
-msg.s_key2 = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시 빨간가색으로 바뀔때 \n 버튼을 눌러주세요. \n\n 참가자가 준비되었으면 이미징을 시작합니다. (s)') ;
+msg.s_key = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시가 빨간색으로 바뀔때 \n 버튼을 눌러주세요. \n\n 참가자가 준비되었으면 이미징을 시작합니다 (s).');
+msg.s_key2 = double('이미지 속 물체를 집중해서 봐주세요. \n 그리고 이미지 사이에 등장하는 십자표시가 빨간색으로 바뀔때 \n 버튼을 눌러주세요. \n\n 참가자가 준비되었으면 이미징을 시작합니다. (s)') ;
 
 msg.start_buffer = double('시작합니다...');
 
@@ -259,7 +259,7 @@ try
         end
     end
     %% Time stamp for run start
-    tic
+    
     data.runscan_starttime = GetSecs; % run start timestamp
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     DrawFormattedText(theWindow, msg.start_buffer, 'center', 'center', white, [], [], [], 1.2);
@@ -300,7 +300,7 @@ try
     
     
     data = viewImages(im_path, stimuli_info, msg, data);
-    toc
+    
     Screen(theWindow, 'FillRect', bgcolor, window_rect);
     Screen('TextSize', theWindow, fontsize(3));
     DrawFormattedText(theWindow, msg.run_end, 'center', textH, white);
@@ -430,9 +430,9 @@ for i = 1:length(im_path)
     
 
     theImageLocation = im_path{i};
-    tic 
+    
     theImage = imread(theImageLocation);
-    toc
+    
 
     imageTexture = Screen('MakeTexture', theWindow, theImage);
 
